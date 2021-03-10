@@ -17,7 +17,9 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
+import io
 import requests
+import cv2
 
 class DataLoader():
     def __init__(self):
@@ -35,18 +37,51 @@ class DataLoader():
         for line in lines:
             self.imageUrls.append(line.split()[0])
 
-        for i in range(self.numImages):
-            im = Image.open(requests.get(self.imageUrls[i]))
-            print(im)
+        for i in range(10):
+            print(i)
+            response = requests.get(self.imageUrls[i])
+            # response = requests.get('https://38.media.tumblr.com/17bdef6f42954defdd0b250a5788e54a/tumblr_nf21kqOJiD1siwn55o1_500.gif')
+            image_bytes = io.BytesIO(response.content)
+            im = Image.open(image_bytes)
+            if self.removeDuplicates(im) == -1:
+                continue
             print('------------------------------------------------------------------------')
 
-    def removeDuplicates(self):
+    def removeDuplicates(self, im):
         """
 
         1) remove duplicate image for the frame
         :return: [[]]
         """
+        array_lst = []
+        image_lst = []
+        # To iterate through the entire gif
+        numframes = 0
+        try:
+            while 1:
+                im.seek(im.tell() + 1)
+                numframes += 1
+        except EOFError:
+            im.seek(0)
+        interval = numframes // 10 + 1
+        print("numframes", numframes, interval)
+        try:
+            while 1:
+                if (im.tell() % interval == 0):
+                    new = Image.new("RGBA", im.size)
+                    new.paste(im)
+                    arr = np.array(new).astype(np.uint8)
+                    array_lst.append(arr)
+                    image_lst.append(np.array(new))
+                im.seek(im.tell() + 1)
+        except EOFError:
+            pass
+        if len(image_lst) > 10:
+            return -1
 
+        # show sampled image here
+        # for i in array_lst:
+        #     Image.fromarray(i).show()
 
 dl = DataLoader()
 dl.readImages()
