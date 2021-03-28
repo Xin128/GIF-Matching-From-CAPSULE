@@ -9,14 +9,14 @@ array_lst = []
 # To iterate through the entire gif
 try:
     while 1:
-
         im.seek(im.tell()+1)
         new = Image.new("RGBA", im.size)
         new.paste(im)
         arr = np.array(new).astype(np.uint8)
         array_lst.append(arr)
 except EOFError:
-    pass # end of sequence
+    pass
+    # end of sequence
 
 from scipy.spatial.distance import euclidean, pdist, squareform
 
