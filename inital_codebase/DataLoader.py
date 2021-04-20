@@ -1,18 +1,3 @@
-"""
-Initial loading: 100 gifs
-3. The general query pipeline we have for gif query is following:
-    1. Input: a query gif (may contain multiple frames)
-    2. Extract the gif to multiple images based on frame number (currently using PIL IMAGE package)
-    3. For each image frame in gif, query the top similar image from training gif-image collections using CAPSULE.
-    4. Rank potential gifs based on all similar images’ corresponding gifID frequencies.
-    5. Return the top k similar gif id.
-4. Training pipeline:
-    1. For each gif in collections, split it into multiple frames.
-    Apply feature extraction on each image frame (same as CAPSULE process).
-    Insert gif id in our hash table.
-
-"""
-
 import os
 import matplotlib.pyplot as plt
 import numpy as np
