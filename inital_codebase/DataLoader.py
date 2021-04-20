@@ -21,10 +21,11 @@ import io
 import requests
 import random
 import cv2
+from collections import defaultdict
+import pandas as pd
 
-
-alg = cv2.AKAZE_create()
-surf = cv2.xfeatures2d_SURF.create(hessianThreshold=400)
+# alg = cv2.AKAZE_create()
+surf = cv2.xfeatures2d.SURF_create(hessianThreshold=600)
 
 
 class DataLoader():
@@ -32,49 +33,36 @@ class DataLoader():
         self.numImages = 0
         self.imageUrls = []
 
-    def readImages(self):
+    def readImage(self, link):
         """
         update imageUrls from tsv files
         :return:
         """
-        gif_file = open('raw_gifs.tsv')
-        lines = gif_file.readlines()
-        self.numImages = len(lines)
-        for line in lines:
-            self.imageUrls.append(line.split()[0])
+        # gif_file = open('raw_gifs.tsv')
+        # lines = gif_file.readlines()
+        # self.numImages = len(lines)
+        # for line in lines:
+        #     self.imageUrls.append(line.split()[0])
 
-        for i in range(1):
-            print("CHEK!!!!")
-            print(i,self.imageUrls[i] )
-            response = requests.get(self.imageUrls[i])
-            # response = requests.get('https://38.media.tumblr.com/17bdef6f42954defdd0b250a5788e54a/tumblr_nf21kqOJiD1siwn55o1_500.gif')
-            image_bytes = io.BytesIO(response.content)
-            im = Image.open(image_bytes)
-            img_data_lst = self.removeDuplicates(im)
-            if img_data_lst == None:
-                continue
-            else:
-                for img_data in img_data_lst:
-                    # Dinding image keypoints
-                    kps = alg.detect(img_data)
-                    # Getting first 32 of them.
-                    # Number of keypoints is varies depend on image size and color pallet
-                    # Sorting them based on keypoint response value(bigger is better)
-                    # kps = sorted(kps, key=lambda x: -x.response)[:vector_size]
-                    # computing descriptors vector
-                    kps, dsc = alg.compute(img_data, kps)
-                    # Flatten all of them in one big vector - our feature vector
-                    # dsc = dsc.flatten()
-                    print(len(dsc[10]))
+        # for i in range(self.numImages):
+        #     print("CHEK!!!!")
+        #     print(i,self.imageUrls[i] )
+            # response = requests.get(self.imageUrls[i])
+        response = requests.get(link)
+        image_bytes = io.BytesIO(response.content)
+        im = Image.open(image_bytes)
+        img_data_lst = self.removeDuplicates(im)
 
-                    #TODO: feature extraction for surf not working
-                    keypoints = surf.detect(img_data)
-
-
-            # if self.removeDuplicates(im) == -1:
-            #     continue
-            # print('------------------------------------------------------------------------')
-            return self.removeDuplicates(im)
+        features_lst = []
+        if img_data_lst == None:
+            return
+        else:
+            for img_data in img_data_lst:
+                key_points = surf.detect(img_data, None)
+                descriptor = surf.compute(img_data, key_points)
+                features = descriptor[1]
+                features_lst.append(features)
+        return features_lst
 
     def removeDuplicates(self, im):
         """
@@ -111,10 +99,6 @@ class DataLoader():
             return -1
         return image_lst
 
-        # show sampled image here
-        # for i in array_lst:
-        #     Image.fromarray(i).show()
-
 
 
 # {hashCode: image id}
@@ -138,13 +122,15 @@ class SRP:
         #   sum > 0 => 1 / 0
         # k bit of sum
         # convert to base10
+        # [1, 2, 3]  * [-1, 1, -1]  ==> [0, 1, 0]  ==
         random.seed(self.seed)
         bitArray = []
         # print("input!!", input)
         for i in range(self.k):
             curSum = 0
             for j in range(len(input)):
-                curSum += random.choice([-1, 1]) * input[j]
+                randomVal  = random.choice([-1, 1])
+                curSum += randomVal * input[j]
             bitArray.append(int(curSum > 0))
         res = int("".join(str(x) for x in bitArray), 2)
 
@@ -168,19 +154,17 @@ class Resovoir:
             if (prob < self.r):
                 self.resArray[prob] = id
         self.count += 1
-
-        # if (len(self.hashtables[l][hashed_index]) <= self.r):
-        #     self.hashtables[l][hashed_index].append(id)
-        # else:
+    def get(self):
+        return self.resArray
 
     def printRes(self):
         return self.resArray
 
 class hashTable:
     def __init__(self, k, L, r):
-        self.k = k
-        self.L = L  #
-        self.r = r
+        self.k = k  # hash dimension
+        self.L = L  # number of hash functions
+        self.r = r  # resovoir size
         self.hashtables = [[Resovoir(self.r) for j in range(2 ** self.k)] for l in range(self.L)]
         self.d = 128
         self.hashfunc_lst = [SRP(k, L, self.d, i) for i in range(self.L)]
@@ -193,8 +177,79 @@ class hashTable:
 
     def printHashTable(self):
         for i in range(self.L):
-            for j in range(self.k):
-                print(i, j, "check", self.hashtables[i][j].printRes())
+            tableLen = 0
+            for j in range(2 ** self.k):
+                tableLen += len(self.hashtables[i][j].get())
+                # print(i, j, "check", self.hashtables[i][j].printRes())
+            print("Table: ", i, " Length: ", tableLen)
+    #
+    def tocsv(self):
+        csvPandas = pd.DataFrame()
+        for i in range(self.L):
+            tableLen = 0
+            for j in range(2 ** self.k):
+                tableLen += len(self.hashtables[i][j].get())
+                csvPandas.append([i, j, self.hashtables[i][j].get()])
+                # print(i, j, "check", self.hashtables[i][j].printRes())
+        csvPandas.to_csv("HashTable_Result.csv")
+
+    def query(self, features_lst):
+        scores = defaultdict(int)
+        framecount = 0
+        for features in features_lst:  # features: each frame's feature matrix
+            print("Query FRAME COUNT: ", framecount, "feature length: ", len(features))
+            framecount += 1
+            for feature in features:  # feature: each frame's feature vector
+                for l in range(self.L):
+                    hashed_index = self.hashfunc_lst[l].hash(feature)
+                    result_ids = self.hashtables[l][hashed_index].get()
+                    # print("len of result ids", len(result_ids))
+                    for id in result_ids:
+                        scores[id] += 1
+        return scores
+
+def main():
+#     initialize dataloader
+    dataloader = DataLoader()
+    gif_file = open('raw_gifs.tsv')
+    lines = [line.split()[0] for line in gif_file.readlines()]
+    numGifs = len(lines)
+#       initialize hash table
+    lshHashTable = hashTable(10, 3, 1000)
+    for id in range(10):  # numGifs
+        link = lines[id]
+        print("LINK:", link)
+        features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
+        if id == None:
+            continue
+        print("ID", id)
+
+        # Insertion
+        framecount = 0
+        for features in features_lst:  # features: each frame's feature matrix
+            print("FRAME COUNT: ", framecount, "feature length: ", len(features))
+            framecount += 1
+            for feature in features:    # feature: each frame's feature vector
+                lshHashTable.insert(feature, id)
+
+    # Query
+
+
+    features_lst = dataloader.readImage(lines[0])
+    print(lshHashTable.query(features_lst))
+    print(lshHashTable.printHashTable())
+    lshHashTable.tocsv()
+    # framecount = 0
+    # for features in features_lst:  # features: each frame's feature matrix
+    #     print("Query FRAME COUNT: ", framecount, "feature length: ", len(features))
+    #     framecount += 1
+    #     for feature in features:  # feature: each frame's feature vector
+    #         print(lshHashTable.query(feature))
+
+
+if __name__ == "__main__":
+    main()
+
 
 
 # random.seed(0)
@@ -204,6 +259,8 @@ class hashTable:
 #     hashed.insert(vectors[i], i)
 # hashed.printHashTable()
 
-dl = DataLoader()
-dl.readImages()
+# dl = DataLoader()
+# dl.readImages()
 
+
+# table number  index     [id1, id2]
