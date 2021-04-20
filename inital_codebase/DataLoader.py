@@ -24,7 +24,7 @@ import cv2
 
 
 alg = cv2.AKAZE_create()
-
+surf = cv2.xfeatures2d_SURF.create(hessianThreshold=400)
 
 
 class DataLoader():
@@ -68,9 +68,8 @@ class DataLoader():
                     print(len(dsc[10]))
 
                     #TODO: feature extraction for surf not working
-                    # detector = cv2.xfeatures2d_SURF.create(hessianThreshold=400)
-                    # keypoints = detector.detect(img_data)
-                    # print("keypoints", keypoints)
+                    keypoints = surf.detect(img_data)
+
 
             # if self.removeDuplicates(im) == -1:
             #     continue
