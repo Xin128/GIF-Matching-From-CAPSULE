@@ -1,18 +1,3 @@
-"""
-Initial loading: 100 gifs
-3. The general query pipeline we have for gif query is following:
-    1. Input: a query gif (may contain multiple frames)
-    2. Extract the gif to multiple images based on frame number (currently using PIL IMAGE package)
-    3. For each image frame in gif, query the top similar image from training gif-image collections using CAPSULE.
-    4. Rank potential gifs based on all similar images’ corresponding gifID frequencies.
-    5. Return the top k similar gif id.
-4. Training pipeline:
-    1. For each gif in collections, split it into multiple frames.
-    Apply feature extraction on each image frame (same as CAPSULE process).
-    Insert gif id in our hash table.
-
-"""
-
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -184,13 +169,16 @@ class hashTable:
             print("Table: ", i, " Length: ", tableLen)
     #
     def tocsv(self):
-        csvPandas = pd.DataFrame()
+
+        csvList = []
         for i in range(self.L):
             tableLen = 0
             for j in range(2 ** self.k):
                 tableLen += len(self.hashtables[i][j].get())
-                csvPandas.append([i, j, self.hashtables[i][j].get()])
+                csvList.append([i, j, self.hashtables[i][j].get()])
                 # print(i, j, "check", self.hashtables[i][j].printRes())
+        csvPandas = pd.DataFrame(csvList)
+        print(csvPandas)
         csvPandas.to_csv("HashTable_Result.csv")
 
     def query(self, features_lst):
@@ -215,8 +203,8 @@ def main():
     lines = [line.split()[0] for line in gif_file.readlines()]
     numGifs = len(lines)
 #       initialize hash table
-    lshHashTable = hashTable(10, 3, 1000)
-    for id in range(10):  # numGifs
+    lshHashTable = hashTable(16, 10, 1000)
+    for id in range(100):  # numGifs
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
@@ -236,9 +224,9 @@ def main():
 
 
     features_lst = dataloader.readImage(lines[0])
+    lshHashTable.tocsv()
     print(lshHashTable.query(features_lst))
     print(lshHashTable.printHashTable())
-    lshHashTable.tocsv()
     # framecount = 0
     # for features in features_lst:  # features: each frame's feature matrix
     #     print("Query FRAME COUNT: ", framecount, "feature length: ", len(features))
