@@ -229,7 +229,8 @@ def main():
             for feature in features:    # feature: each frame's feature vector
                 lshHashTable.insert(feature, id)
         print("Insertion takes", time.time() - start, "s")
-
+        if (id % 1000 == 0):
+            lshHashTable.tocsv()
     # Query
 
 
