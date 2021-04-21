@@ -215,9 +215,9 @@ def main():
         # Insertion
         framecount = 0
         for features in features_lst:  # features: each frame's feature matrix
-            if features == None:
-                print("Boom!")
-                break
+            # if features == None:
+            #     print("Boom!")
+            #     break
             print("FRAME COUNT: ", framecount, "feature length: ", len(features))
             framecount += 1
             for feature in features:    # feature: each frame's feature vector
