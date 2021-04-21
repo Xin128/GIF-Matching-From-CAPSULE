@@ -8,6 +8,7 @@ import random
 import cv2
 from collections import defaultdict
 import pandas as pd
+import time
 
 # alg = cv2.AKAZE_create()
 surf = cv2.xfeatures2d.SURF_create(hessianThreshold=600)
@@ -178,12 +179,12 @@ class hashTable:
                 csvList.append([i, j, self.hashtables[i][j].get()])
                 # print(i, j, "check", self.hashtables[i][j].printRes())
         csvPandas = pd.DataFrame(csvList)
-        print(csvPandas)
         csvPandas.to_csv("HashTable_Result.csv", index=None, header=["table", "index", "ids"])
 
     def query(self, features_lst):
         scores = defaultdict(int)
         framecount = 0
+        qstart = time.time()
         for features in features_lst:  # features: each frame's feature matrix
             print("Query FRAME COUNT: ", framecount, "feature length: ", len(features))
             framecount += 1
@@ -194,6 +195,8 @@ class hashTable:
                     # print("len of result ids", len(result_ids))
                     for id in result_ids:
                         scores[id] += 1
+        print("Insertion takes", time.time() - qstart, "s")
+
         return scores
 
 def main():
@@ -203,8 +206,10 @@ def main():
     lines = [line.split()[0] for line in gif_file.readlines()]
     numGifs = len(lines)
 #       initialize hash table
-    lshHashTable = hashTable(1, 1, 10)
-    for id in range(2):  # numGifs
+    starttime = time.time()
+
+    lshHashTable = hashTable(1, 1, 100)
+    for id in range(3):  # numGifs
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
@@ -214,6 +219,7 @@ def main():
 
         # Insertion
         framecount = 0
+        start = time.time()
         for features in features_lst:  # features: each frame's feature matrix
             if features is None:
                 print("Boom!")
@@ -222,6 +228,7 @@ def main():
             framecount += 1
             for feature in features:    # feature: each frame's feature vector
                 lshHashTable.insert(feature, id)
+        print("Insertion takes", time.time() - start, "s")
 
     # Query
 
@@ -230,6 +237,7 @@ def main():
     lshHashTable.tocsv()
     print(lshHashTable.query(features_lst))
     print(lshHashTable.printHashTable())
+    print("Total Time", time.time() - starttime)
     # framecount = 0
     # for features in features_lst:  # features: each frame's feature matrix
     #     print("Query FRAME COUNT: ", framecount, "feature length: ", len(features))
