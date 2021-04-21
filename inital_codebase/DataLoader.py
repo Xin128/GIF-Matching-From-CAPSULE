@@ -208,16 +208,16 @@ def main():
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
-        if features_lst == None:
+        if features_lst is None:
             continue
         print("ID", id)
 
         # Insertion
         framecount = 0
         for features in features_lst:  # features: each frame's feature matrix
-            # if features == None:
-            #     print("Boom!")
-            #     break
+            if features is None:
+                print("Boom!")
+                break
             print("FRAME COUNT: ", framecount, "feature length: ", len(features))
             framecount += 1
             for feature in features:    # feature: each frame's feature vector
