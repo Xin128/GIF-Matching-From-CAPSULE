@@ -179,7 +179,7 @@ class hashTable:
                 # print(i, j, "check", self.hashtables[i][j].printRes())
         csvPandas = pd.DataFrame(csvList)
         print(csvPandas)
-        csvPandas.to_csv("HashTable_Result.csv")
+        csvPandas.to_csv("HashTable_Result.csv", index=None, header=["table", "index", "ids"])
 
     def query(self, features_lst):
         scores = defaultdict(int)
@@ -203,8 +203,8 @@ def main():
     lines = [line.split()[0] for line in gif_file.readlines()]
     numGifs = len(lines)
 #       initialize hash table
-    lshHashTable = hashTable(16, 10, 1000)
-    for id in range(100):  # numGifs
+    lshHashTable = hashTable(1, 1, 10)
+    for id in range(2):  # numGifs
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
