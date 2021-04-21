@@ -208,8 +208,8 @@ def main():
 #       initialize hash table
     starttime = time.time()
 
-    lshHashTable = hashTable(1, 1, 100)
-    for id in range(3):  # numGifs
+    lshHashTable = hashTable(16, 50, 2000)
+    for id in range(5000):  # numGifs
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
