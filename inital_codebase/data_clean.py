@@ -1,4 +1,4 @@
-gif_file = open('raw_gifs.tsv')
-lines = gif_file.readlines()
-for line in lines:
-    print(line.split()[0])
+import pandas as pd
+
+test = pd.read_csv("HashTable_Result.csv")
+print(test)
