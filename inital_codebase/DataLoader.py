@@ -208,7 +208,7 @@ def main():
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
-        if id == None:
+        if features_lst == None:
             continue
         print("ID", id)
 
