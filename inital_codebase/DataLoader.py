@@ -8,6 +8,7 @@ import random
 import cv2
 from collections import defaultdict
 import pandas as pd
+import time
 
 # alg = cv2.AKAZE_create()
 surf = cv2.xfeatures2d.SURF_create(hessianThreshold=600)
@@ -184,6 +185,7 @@ class hashTable:
     def query(self, features_lst):
         scores = defaultdict(int)
         framecount = 0
+        qstart = time.time()
         for features in features_lst:  # features: each frame's feature matrix
             print("Query FRAME COUNT: ", framecount, "feature length: ", len(features))
             framecount += 1
@@ -194,6 +196,8 @@ class hashTable:
                     # print("len of result ids", len(result_ids))
                     for id in result_ids:
                         scores[id] += 1
+        print("Insertion takes", time.time() - qstart, "s")
+
         return scores
 
 def main():
@@ -204,7 +208,7 @@ def main():
     numGifs = len(lines)
 #       initialize hash table
     lshHashTable = hashTable(16, 10, 1000)
-    for id in range(100):  # numGifs
+    for id in range(3):  # numGifs
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
@@ -214,6 +218,7 @@ def main():
 
         # Insertion
         framecount = 0
+        start = time.time()
         for features in features_lst:  # features: each frame's feature matrix
             if features is None:
                 print("Boom!")
@@ -222,6 +227,7 @@ def main():
             framecount += 1
             for feature in features:    # feature: each frame's feature vector
                 lshHashTable.insert(feature, id)
+        print("Insertion takes", time.time() - start, "s")
 
     # Query
 
