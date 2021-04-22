@@ -208,8 +208,8 @@ def main():
 #       initialize hash table
     starttime = time.time()
 
-    lshHashTable = hashTable(16, 25, 2000)
-    for id in range(2000):  # numGifs
+    lshHashTable = hashTable(14, 20, 1500)
+    for id in range(1000):  # numGifs
         link = lines[id]
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
@@ -239,12 +239,15 @@ def main():
     print(lshHashTable.query(features_lst))
     print(lshHashTable.printHashTable())
     print("Total Time", time.time() - starttime)
-    # framecount = 0
-    # for features in features_lst:  # features: each frame's feature matrix
-    #     print("Query FRAME COUNT: ", framecount, "feature length: ", len(features))
-    #     framecount += 1
-    #     for feature in features:  # feature: each frame's feature vector
-    #         print(lshHashTable.query(feature))
+
+    # Query Batch
+    for x in range(3000, 3100, 1):
+        query_feature_lst = dataloader.readImage(lines[x])
+        rslt_dict = lshHashTable.query(query_feature_lst)
+        sort_rslt = sorted(rslt_dict.items(), key=lambda kv:kv[1], reverse=True)
+        print("Query ID: ", x, "Query Link", lines[x])
+        print("Top two results: ", sort_rslt[0][0], sort_rslt[1][0], lines[sort_rslt[0][0]], lines[sort_rslt[1][0]])
+
 
 
 if __name__ == "__main__":
