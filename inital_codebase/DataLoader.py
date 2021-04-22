@@ -11,7 +11,7 @@ import pandas as pd
 import time
 
 # alg = cv2.AKAZE_create()
-surf = cv2.xfeatures2d.SURF_create(hessianThreshold=600)
+surf = cv2.xfeatures2d.SURF_create(hessianThreshold=800)
 
 
 class DataLoader():
