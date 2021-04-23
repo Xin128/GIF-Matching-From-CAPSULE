@@ -11,7 +11,7 @@ import pandas as pd
 import time
 
 # alg = cv2.AKAZE_create()
-surf = cv2.xfeatures2d.SURF_create(hessianThreshold=800)
+surf = cv2.xfeatures2d.SIFT_create(100)
 
 
 class DataLoader():
@@ -66,7 +66,7 @@ class DataLoader():
                 numframes += 1
         except EOFError:
             im.seek(0)
-        interval = numframes // 10 + 1
+        interval = numframes // 5 + 1
         print("numframes", numframes, interval)
         try:
             while 1:
@@ -209,13 +209,14 @@ def main():
     starttime = time.time()
 
     lshHashTable = hashTable(14, 20, 1500)
+    features_lst = dataloader.readImage(lines[4])
     for id in range(1000):  # numGifs
         link = lines[id]
+        print("ID", id)
         print("LINK:", link)
         features_lst = dataloader.readImage(link)  # features_lst: numFrames features matrix
         if features_lst is None:
             continue
-        print("ID", id)
 
         # Insertion
         framecount = 0
@@ -228,20 +229,17 @@ def main():
             framecount += 1
             for feature in features:    # feature: each frame's feature vector
                 lshHashTable.insert(feature, id)
-        print("Insertion takes", time.time() - start, "s")
-        if (id % 1000 == 0):
+        print("Insertion takes", time.time() - start, "s\n")
+        if (id % 10 == 0):
             lshHashTable.tocsv()
+            print(lshHashTable.query(features_lst))
     # Query
 
-
-    features_lst = dataloader.readImage(lines[0])
-    lshHashTable.tocsv()
-    print(lshHashTable.query(features_lst))
     print(lshHashTable.printHashTable())
     print("Total Time", time.time() - starttime)
 
     # Query Batch
-    for x in range(3000, 3100, 1):
+    for x in range(3000, 3010, 1):
         query_feature_lst = dataloader.readImage(lines[x])
         rslt_dict = lshHashTable.query(query_feature_lst)
         sort_rslt = sorted(rslt_dict.items(), key=lambda kv:kv[1], reverse=True)
