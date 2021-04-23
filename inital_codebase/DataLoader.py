@@ -209,7 +209,7 @@ def main():
     starttime = time.time()
 
     lshHashTable = hashTable(14, 20, 1500)
-    features_lst = dataloader.readImage(lines[4])
+    # features_lst = dataloader.readImage(lines[4])
     for id in range(1000):  # numGifs
         link = lines[id]
         print("ID", id)
@@ -229,8 +229,8 @@ def main():
             framecount += 1
             for feature in features:    # feature: each frame's feature vector
                 lshHashTable.insert(feature, id)
-        print("Insertion takes", time.time() - start, "s\n")
-        if (id % 10 == 0):
+        print("Insertion takes", time.time() - start, "s")
+        if id > 0 and id % 10 == 0:
             lshHashTable.tocsv()
             print(lshHashTable.query(features_lst))
     # Query
