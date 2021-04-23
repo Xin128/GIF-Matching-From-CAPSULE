@@ -208,8 +208,10 @@ def main():
 #       initialize hash table
     starttime = time.time()
 
-    lshHashTable = hashTable(14, 20, 1500)
+    lshHashTable = hashTable(14, 40, 1500)
     # features_lst = dataloader.readImage(lines[4])
+    correct = 0
+    auc = []
     for id in range(1000):  # numGifs
         link = lines[id]
         print("ID", id)
@@ -232,8 +234,15 @@ def main():
         print("Insertion takes", time.time() - start, "s")
         if id > 0 and id % 10 == 0:
             lshHashTable.tocsv()
-            print(lshHashTable.query(features_lst))
-    # Query
+            rslt_dict = lshHashTable.query(features_lst)
+            sort_rslt = sorted(rslt_dict.items(), key=lambda kv: kv[1], reverse=True)[:3]
+            if id in [sort_rslt[0][0], sort_rslt[1][0], sort_rslt[2][0]]:
+                correct += 1
+            auc.append(correct/(id + 1))
+            print("Top three results: ", sort_rslt[0][0], sort_rslt[1][0], sort_rslt[2][0], "Rate: ", correct/(id + 1))
+
+
+# Query
 
     print(lshHashTable.printHashTable())
     print("Total Time", time.time() - starttime)
