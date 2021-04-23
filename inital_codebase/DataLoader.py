@@ -208,7 +208,7 @@ def main():
 #       initialize hash table
     starttime = time.time()
 
-    lshHashTable = hashTable(14, 40, 1500)
+    lshHashTable = hashTable(14, 30, 1500)
     # features_lst = dataloader.readImage(lines[4])
     correct = 0
     auc = []
@@ -236,7 +236,7 @@ def main():
             lshHashTable.tocsv()
             rslt_dict = lshHashTable.query(features_lst)
             sort_rslt = sorted(rslt_dict.items(), key=lambda kv: kv[1], reverse=True)[:3]
-            if id in [sort_rslt[0][0], sort_rslt[1][0], sort_rslt[2][0]]:
+            if id == sort_rslt[0][0] or id == sort_rslt[1][0] or id == sort_rslt[2][0]:
                 correct += 1
             auc.append(correct/(id + 1))
             print("Top three results: ", sort_rslt[0][0], sort_rslt[1][0], sort_rslt[2][0], "Rate: ", correct/(id + 1))
