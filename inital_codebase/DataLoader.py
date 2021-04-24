@@ -212,7 +212,7 @@ def main():
     # features_lst = dataloader.readImage(lines[4])
     correct = 0
     auc = []
-    for id in range(1000):  # numGifs
+    for id in range(500):  # numGifs
         link = lines[id]
         print("ID", id)
         print("LINK:", link)
@@ -238,8 +238,10 @@ def main():
             sort_rslt = sorted(rslt_dict.items(), key=lambda kv: kv[1], reverse=True)[:3]
             if id == sort_rslt[0][0] or id == sort_rslt[1][0] or id == sort_rslt[2][0]:
                 correct += 1
-            auc.append(correct/(id + 1))
-            print("Top three results: ", sort_rslt[0][0], sort_rslt[1][0], sort_rslt[2][0], "Rate: ", correct/(id + 1))
+            auc.append(correct * 10.0/(id + 1))
+            print("Top three results: ", sort_rslt[0][0], sort_rslt[1][0], sort_rslt[2][0], "Rate: ", correct * 10.0/(id + 1))
+    temp = pd.DataFrame(auc)
+    temp.to_csv("accuracy.csv")
 
 
 # Query
