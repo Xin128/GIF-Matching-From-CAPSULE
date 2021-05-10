@@ -220,7 +220,7 @@ def main():
         if features_lst is None:
             continue
 
-        # Insertion
+        # Insertiont
         framecount = 0
         start = time.time()
         for features in features_lst:  # features: each frame's feature matrix
