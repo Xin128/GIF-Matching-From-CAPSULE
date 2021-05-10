@@ -202,13 +202,13 @@ class hashTable:
 def main():
 #     initialize dataloader
     dataloader = DataLoader()
-    gif_file = open('henrydata.txt')
+    gif_file = open('newdata.tsv')
     lines = [line.split()[0] for line in gif_file.readlines()]
     numGifs = len(lines)
 #       initialize hash table
     starttime = time.time()
 
-    q_file = open('henryval.txt')
+    q_file = open('newval.tsv')
     q_lines = [line.split()[0] for line in q_file.readlines()]
 
     lshHashTable = hashTable(12, 10, 1500)
