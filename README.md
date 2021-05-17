@@ -20,4 +20,4 @@ As we loaded our hash tables into a csv file, the total size it takes is less th
 
 Also, both time and space are largely dependent on the chosen hyperparameters. With larger K and L, both time and space will increase linearly, while the accuracy of prediction increases exponentially as expected. Therefore, to further develop this project into mobile devices, we would further determine the trade-off between time, space and accuracy.
 
-Detailed Report: [Final Report](https://github.com/user/repo/blob/branch/other_file.md)
+Detailed Report: [Final Report](https://github.com/Xin128/Xin_Henry_COMP480/blob/main/submit/COMP480_Final_Project_XinHao_HenryZhang.pdf)
