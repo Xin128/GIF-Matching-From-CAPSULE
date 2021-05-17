@@ -202,13 +202,16 @@ class hashTable:
 def main():
 #     initialize dataloader
     dataloader = DataLoader()
-    gif_file = open('raw_gifs.tsv')
+    gif_file = open('newdata.tsv')
     lines = [line.split()[0] for line in gif_file.readlines()]
     numGifs = len(lines)
 #       initialize hash table
     starttime = time.time()
 
-    lshHashTable = hashTable(14, 30, 1500)
+    q_file = open('newval.tsv')
+    q_lines = [line.split()[0] for line in q_file.readlines()]
+
+    lshHashTable = hashTable(12, 10, 1500)
     # features_lst = dataloader.readImage(lines[4])
     correct = 0
     auc = []
@@ -220,7 +223,7 @@ def main():
         if features_lst is None:
             continue
 
-        # Insertiont
+        # Insertion
         framecount = 0
         start = time.time()
         for features in features_lst:  # features: each frame's feature matrix
@@ -232,47 +235,40 @@ def main():
             for feature in features:    # feature: each frame's feature vector
                 lshHashTable.insert(feature, id)
         print("Insertion takes", time.time() - start, "s")
+
         if id > 0 and id % 10 == 0:
-            lshHashTable.tocsv()
-            rslt_dict = lshHashTable.query(features_lst)
+            # lshHashTable.tocsv()
+            temp_features_lst = dataloader.readImage(q_lines[id//10 - 1])
+            rslt_dict = lshHashTable.query(temp_features_lst)
             sort_rslt = sorted(rslt_dict.items(), key=lambda kv: kv[1], reverse=True)[:3]
             if id == sort_rslt[0][0] or id == sort_rslt[1][0] or id == sort_rslt[2][0]:
                 correct += 1
             auc.append(correct * 10.0/(id + 1))
             print("Top three results: ", sort_rslt[0][0], sort_rslt[1][0], sort_rslt[2][0], "Rate: ", correct * 10.0/(id + 1))
-    temp = pd.DataFrame(auc)
-    temp.to_csv("accuracy.csv")
+    # temp = pd.DataFrame(auc)
+    # temp.to_csv("accuracy.csv")
 
 
 # Query
 
-    print(lshHashTable.printHashTable())
+    # print(lshHashTable.printHashTable())
     print("Total Time", time.time() - starttime)
-
+    q_file = open('henryval.txt')
+    q_lines = [line.split()[0] for line in q_file.readlines()]
+    numGifs = len(q_lines)
     # Query Batch
-    for x in range(3000, 3010, 1):
-        query_feature_lst = dataloader.readImage(lines[x])
+    correct = 0
+    for x in range(numGifs):
+        query_feature_lst = dataloader.readImage(q_lines[x])
         rslt_dict = lshHashTable.query(query_feature_lst)
         sort_rslt = sorted(rslt_dict.items(), key=lambda kv:kv[1], reverse=True)
+        if x == sort_rslt[0][0]//10 or x == sort_rslt[1][0]//10 or x == sort_rslt[2][0]//10:
+            correct += 1
         print("Query ID: ", x, "Query Link", lines[x])
         print("Top two results: ", sort_rslt[0][0], sort_rslt[1][0], lines[sort_rslt[0][0]], lines[sort_rslt[1][0]])
+    print("ACCURACY:", correct/numGifs)
 
 
 
 if __name__ == "__main__":
     main()
-
-
-
-# random.seed(0)
-# vectors = [[random.randint(0, 10)for i in range(128)] for j in range(10)]
-# hashed = hashTable(3, 2, 5)
-# for i in range(10):
-#     hashed.insert(vectors[i], i)
-# hashed.printHashTable()
-
-# dl = DataLoader()
-# dl.readImages()
-
-
-# table number  index     [id1, id2]
